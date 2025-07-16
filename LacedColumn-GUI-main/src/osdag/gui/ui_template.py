@@ -166,6 +166,13 @@ class Ui_ModuleWindow(QtWidgets.QMainWindow):
         self.ui.display.FitAll()
 
     def closeEvent(self, event):
+        # Prevent repeated confirmation dialogs
+        if not hasattr(self, '_close_confirmed'):
+            self._close_confirmed = False
+        if self._close_confirmed:
+            event.accept()
+            self._close_confirmed = False  # Reset for next time
+            return
         # Only show confirmation if this is a user-initiated close (not programmatic)
         if event.spontaneous():
             reply = QMessageBox.question(self, 'Message',
@@ -175,11 +182,14 @@ class Ui_ModuleWindow(QtWidgets.QMainWindow):
                 for handler in logger.handlers[:]:
                     logger.removeHandler(handler)
                 self.closed.emit()
+                self._close_confirmed = True
                 event.accept()
             else:
                 event.ignore()
+                self._close_confirmed = False
         else:
             event.accept()
+            self._close_confirmed = False
 
 class Window(QMainWindow):
     closed = QtCore.pyqtSignal()
@@ -2212,6 +2222,13 @@ class Window(QMainWindow):
                 continue
             output_field.setEnabled(False)
     def closeEvent(self, event):
+        # Prevent repeated confirmation dialogs
+        if not hasattr(self, '_close_confirmed'):
+            self._close_confirmed = False
+        if self._close_confirmed:
+            event.accept()
+            self._close_confirmed = False  # Reset for next time
+            return
         # Only show confirmation if this is a user-initiated close (not programmatic)
         if event.spontaneous():
             reply = QMessageBox.question(self, 'Message',
@@ -2221,11 +2238,14 @@ class Window(QMainWindow):
                 for handler in logger.handlers[:]:
                     logger.removeHandler(handler)
                 self.closed.emit()
+                self._close_confirmed = True
                 event.accept()
             else:
                 event.ignore()
+                self._close_confirmed = False
         else:
             event.accept()
+            self._close_confirmed = False
 
     def osdag_header(self):
         image_path = os.path.abspath(os.path.join(os.getcwd(), os.path.join("ResourceFiles\images", "OsdagHeader.png")))

@@ -22,7 +22,6 @@ from ...utils.common.component import *
 from ..member import Member
 from ...Report_functions import *
 from ...utils.common.common_calculation import *
-from ..tension_member import *
 from ...utils.common.Section_Properties_Calculator import BBAngle_Properties, I_sectional_Properties, SHS_RHS_Properties, CHS_Properties
 from ...utils.common import is800_2007
 from ...design_report.reportGenerator_latex import CreateLatex
