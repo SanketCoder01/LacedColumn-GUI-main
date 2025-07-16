@@ -38,8 +38,10 @@ import os
 import traceback
 from ...utils.common.component import Material
 from ...Common import KEY_LACING_SECTION_DIM
+from .compression import Compression
+from .Column import ColumnDesign
 
-class LacedColumn(Member):
+class LacedColumn(Compression, ColumnDesign, Member):
     def calculate_effective_length_yy(self, end_condition_1, end_condition_2, unsupported_length_yy):
         """
         Calculate the effective length (YY) using IS 800:2007 Table 11 logic.
