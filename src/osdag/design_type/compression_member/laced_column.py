@@ -41,7 +41,7 @@ from ...Common import KEY_LACING_SECTION_DIM
 from .compression import Compression
 from .Column import ColumnDesign
 
-class LacedColumn(Compression, ColumnDesign, Member):
+class LacedColumn(ColumnDesign, Member):
     def calculate_effective_length_yy(self, end_condition_1, end_condition_2, unsupported_length_yy):
         """
         Calculate the effective length (YY) using IS 800:2007 Table 11 logic.
@@ -2755,6 +2755,48 @@ class LacedColumn(Compression, ColumnDesign, Member):
         """
         dialog.setModal(True)
         dialog.exec_()
+
+    def calculate_refactored(self, design_dictionary):
+        """
+        Refactored calculation workflow: delegates generic column calculations to ColumnDesign,
+        and only handles lacing/tie-plate specifics here.
+        """
+        # 1. Use ColumnDesign's calculation logic for generic column design
+        ColumnDesign.calculate(self, design_dictionary)
+
+        # 2. Add/override lacing-specific calculations (if any)
+        self.calculate_lacing_and_tie_plate()
+
+        # 3. Prepare results for output (UI)
+        self.prepare_laced_column_results()
+
+    def calculate_lacing_and_tie_plate(self):
+        """
+        Only the logic unique to laced columns (lacing/tie-plate calculations).
+        """
+        # Example: Calculate tie plate dimensions, lacing angle, etc. for rolled I-section
+        if hasattr(self, 'section_property') and self.section_property is not None:
+            # Example calculations (replace with actual logic as needed)
+            self.tie_plate_d = round(2 * self.section_property.depth / 3, 2)         # mm
+            self.tie_plate_t = round(self.section_property.web_thickness, 2)         # mm
+            self.tie_plate_l = round(self.section_property.depth / 2, 2)             # mm
+            self.channel_spacing = round(self.section_property.depth + 2 * self.tie_plate_t, 2)  # mm
+            self.lacing_angle = round(math.degrees(math.atan(self.channel_spacing / (2 * self.tie_plate_l))), 2)  # degrees
+            # Store in self.result for output dock (for the last/selected section)
+            if not hasattr(self, 'result') or not isinstance(self.result, dict):
+                self.result = {}
+            self.result['tie_plate_d'] = self.tie_plate_d
+            self.result['tie_plate_t'] = self.tie_plate_t
+            self.result['tie_plate_l'] = self.tie_plate_l
+            self.result['channel_spacing'] = self.channel_spacing
+            self.result['lacing_spacing'] = self.lacing_angle
+
+    def prepare_laced_column_results(self):
+        """
+        Aggregate all results (including those from base class) for the UI.
+        """
+        # This can be expanded as needed to prepare output for the UI
+        pass
 
 class SectionDesignationDialog(QDialog):
     def __init__(self, section_list, parent=None):
