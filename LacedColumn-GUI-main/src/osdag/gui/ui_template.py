@@ -166,13 +166,6 @@ class Ui_ModuleWindow(QtWidgets.QMainWindow):
         self.ui.display.FitAll()
 
     def closeEvent(self, event):
-        # Prevent repeated confirmation dialogs
-        if not hasattr(self, '_close_confirmed'):
-            self._close_confirmed = False
-        if self._close_confirmed:
-            event.accept()
-            self._close_confirmed = False  # Reset for next time
-            return
         # Only show confirmation if this is a user-initiated close (not programmatic)
         if event.spontaneous():
             reply = QMessageBox.question(self, 'Message',
@@ -182,14 +175,12 @@ class Ui_ModuleWindow(QtWidgets.QMainWindow):
                 for handler in logger.handlers[:]:
                     logger.removeHandler(handler)
                 self.closed.emit()
-                self._close_confirmed = True
                 event.accept()
             else:
                 event.ignore()
-                self._close_confirmed = False
         else:
+            # If the close event is not user-initiated, always accept it (never show dialog)
             event.accept()
-            self._close_confirmed = False
 
 class Window(QMainWindow):
     closed = QtCore.pyqtSignal()
@@ -350,28 +341,26 @@ class Window(QMainWindow):
             return None
 
     def start_loadingWindow(self, main, data):
-        loading_widget = QDialog(self)
-        window_width = self.width() // 2
-        window_height = self.height() // 10
-        loading_widget.setFixedSize(window_width, int(1.5 * window_height))
-        loading_widget.setWindowFlag(Qt.FramelessWindowHint)
-
-        self.progress_bar = QProgressBar(loading_widget)
+        # Directly call the design logic without modal dialogs or threads
+        self.common_function_for_save_and_design(main, data, "Design")
+        self.progress_bar = QProgressBar(self)
         self.progress_bar.setMaximum(100)
-        self.progress_bar.setGeometry(QRect(0, 0, window_width, window_height // 2))
-        loading_label = QLabel(loading_widget)
-        loading_label.setGeometry(QRect(0, window_height // 2, window_width, window_height))
-        loading_label.setFixedSize(window_width, window_height)
+        self.progress_bar.setGeometry(QRect(0, 0, self.width() // 2, self.height() // 10))
+        loading_label = QLabel(self)
+        loading_label.setGeometry(QRect(0, self.height() // 10, self.width() // 2, self.height()))
+        loading_label.setFixedSize(self.width() // 2, self.height())
         loading_label.setAlignment(Qt.AlignCenter)
         loading_label.setText("<p style='font-weight:500'>Please Wait...</p>")
         self.thread_1 = DummyThread(0.00001, self)
         self.thread_1.start()
         self.thread_2 = DummyThread(0.00001, self)
-        self.thread_1.finished.connect(lambda: loading_widget.exec())
         self.thread_1.finished.connect(lambda: self.progress_bar.setValue(10))
         self.thread_1.finished.connect(lambda: self.thread_2.start())
         self.thread_2.finished.connect(lambda: self.common_function_for_save_and_design(main, data, "Design"))
-        self.thread_2.finished.connect(lambda: loading_widget.close())
+        self.thread_2.finished.connect(lambda: self.progress_bar.setValue(100))
+        self.thread_2.finished.connect(lambda: self.progress_bar.close())
+        self.btn_Design.clicked.disconnect()
+        self.btn_Design.clicked.connect(lambda: self.start_loadingWindow(main, data))
 
     def setupUi(self, MainWindow, main, folder):
         # --- Reset output/calculated state and clear output dock on module open ---
@@ -462,7 +451,7 @@ class Window(QMainWindow):
             To get 3d component checkbox details from modules
         """
         i = 0
-        for component in main.get_3d_components(main):
+        for component in main.get_3d_components():
             checkBox = QtWidgets.QCheckBox(self.frame)
             checkBox.setGeometry(QtCore.QRect(230 + i, 0, 110, 29))
             checkBox.setFocusPolicy(QtCore.Qt.TabFocus)
@@ -1247,7 +1236,7 @@ class Window(QMainWindow):
         This routine take the list of separate 3D components checkboxes to be displayed in the ribbon from
         the corresponding module file
         """
-        for component in main.get_3d_components(main):
+        for component in main.get_3d_components():
             actionShow_component = QtWidgets.QAction(MainWindow)
 
             actionShow_component.setObjectName(component[0])
@@ -2162,9 +2151,17 @@ class Window(QMainWindow):
         # Always run calculation after collecting inputs
         if hasattr(main, "calculate") and callable(getattr(main, "calculate")):
             print("[DEBUG] Calling main.calculate with design_inputs:", self.design_inputs)
-            main.calculate(self.design_inputs)
+            try:
+                main.calculate(self.design_inputs)
+            except Exception as e:
+                import traceback
+                error_msg = f"Error during calculation: {e}\n{traceback.format_exc()}"
+                print(error_msg)
+                if hasattr(main, 'logger'):
+                    main.logger.error(error_msg)
+                QMessageBox.critical(self, "Calculation Error", error_msg)
+                return  # Do not proceed to output_values if calculation failed
         # Now get output values and update the dock
-
         if trigger_type == "Save":
             self.saveDesign_inputs()
             return
@@ -2185,16 +2182,23 @@ class Window(QMainWindow):
                     self.designPrefDialog.flag = True
             print(f"QDialog done")
             return
-
         # --- Always perform calculation and show best section in output dock, print all results to terminal ---
         # After calculation, always get the latest output values with flag=True
         if hasattr(main, "output_values"):
-            out_list = main.output_values(True)
-            result_dict = {k: v for (k, _, typ, v, *_rest) in out_list if typ == TYPE_TEXTBOX and k is not None}
-            self.update_output_values(result_dict)
-            print("[INFO] Output calculation values shown in output dock (from output_values True):")
-            for k, v in result_dict.items():
-                print(f"  {k}: {v}")
+            try:
+                out_list = main.output_values(True)
+                result_dict = {k: v for (k, _, typ, v, *_rest) in out_list if typ == TYPE_TEXTBOX and k is not None}
+                self.update_output_values(result_dict)
+                print("[INFO] Output calculation values shown in output dock (from output_values True):")
+                for k, v in result_dict.items():
+                    print(f"  {k}: {v}")
+            except Exception as e:
+                import traceback
+                error_msg = f"Error during output update: {e}\n{traceback.format_exc()}"
+                print(error_msg)
+                if hasattr(main, 'logger'):
+                    main.logger.error(error_msg)
+                QMessageBox.critical(self, "Output Error", error_msg)
         else:
             print("[ERROR] main.output_values(True) not found!")
 
@@ -2222,13 +2226,6 @@ class Window(QMainWindow):
                 continue
             output_field.setEnabled(False)
     def closeEvent(self, event):
-        # Prevent repeated confirmation dialogs
-        if not hasattr(self, '_close_confirmed'):
-            self._close_confirmed = False
-        if self._close_confirmed:
-            event.accept()
-            self._close_confirmed = False  # Reset for next time
-            return
         # Only show confirmation if this is a user-initiated close (not programmatic)
         if event.spontaneous():
             reply = QMessageBox.question(self, 'Message',
@@ -2238,14 +2235,12 @@ class Window(QMainWindow):
                 for handler in logger.handlers[:]:
                     logger.removeHandler(handler)
                 self.closed.emit()
-                self._close_confirmed = True
                 event.accept()
             else:
                 event.ignore()
-                self._close_confirmed = False
         else:
+            # If the close event is not user-initiated, always accept it (never show dialog)
             event.accept()
-            self._close_confirmed = False
 
     def osdag_header(self):
         image_path = os.path.abspath(os.path.join(os.getcwd(), os.path.join("ResourceFiles\images", "OsdagHeader.png")))
@@ -2635,7 +2630,7 @@ class Window(QMainWindow):
                     self.designPrefDialog.ui.tabWidget.tabs.indexOf(tab), f(input_dock_key.currentText()))
             elif change_typ == TYPE_REMOVE_TAB:
 
-                if tab.objectName() != f(input_dock_key.currentText()):
+                if tab is not None and tab.objectName() != f(input_dock_key.currentText()):
                     self.designPrefDialog.ui.tabWidget.tabs.removeTab(
                         self.designPrefDialog.ui.tabWidget.tabs.indexOf(tab))
                 # if tab:

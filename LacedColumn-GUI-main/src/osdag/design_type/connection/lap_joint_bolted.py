@@ -112,30 +112,8 @@ class LapJointBolted(MomentConnection):
     ####################################
     # Design Preference Functions End
     ####################################
-    def set_osdaglogger(key):
-
-        """Function to set Logger for Tension Module"""
-        global logger
-        logger = logging.getLogger('Osdag')
-
-        logger.setLevel(logging.DEBUG)
-        handler = logging.StreamHandler()
-        formatter = logging.Formatter(fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
-
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
-        handler = logging.FileHandler('logging_text.log')
-
-        formatter = logging.Formatter(fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
-
-        if key is not None:
-            handler = OurLog(key)
-            formatter = logging.Formatter(fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-                                          datefmt='%Y-%m-%d %H:%M:%S')
-            handler.setFormatter(formatter)
-            logger.addHandler(handler)
+    def set_osdaglogger(self, widget_or_key=None):
+        pass  # implement logging if needed, else ignore the argument
 
 
     def input_value_changed(self):

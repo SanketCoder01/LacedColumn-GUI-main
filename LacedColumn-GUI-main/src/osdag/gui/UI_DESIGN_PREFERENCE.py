@@ -1721,11 +1721,7 @@ class DesignPreferences():
         return {'lower': lower_fy, 'upper': upper_fy}
 
     def closeEvent(self, event):
-        # Only allow close if user clicked the close button
-        if self.window_close_flag:
-            event.accept()
-        else:
-            event.ignore()
+        event.accept()
 
     def close_designPref(self):
         self.window_close_flag = True

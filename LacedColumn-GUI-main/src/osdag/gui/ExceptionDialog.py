@@ -156,4 +156,4 @@ class AbstractTitleBar(QtWidgets.QFrame):
         self.horizontal_layout.setContentsMargins(0, 0, 0, 0)
         self.horizontal_layout.setSpacing(0)
 
-        self.close_button.clicked.connect(self.window().close)
+        self.close_button.clicked.connect(self.close)

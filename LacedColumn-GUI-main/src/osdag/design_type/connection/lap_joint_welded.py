@@ -145,7 +145,7 @@ class LapJointWelded(MomentConnection):
     # Design Preference Functions End
     ####################################
 
-    def set_osdaglogger(key):
+    def set_osdaglogger(self, widget_or_key=None):
 
         """
         Function to set Logger for Tension Module
@@ -167,8 +167,8 @@ class LapJointWelded(MomentConnection):
         handler.setFormatter(formatter)
         logger.addHandler(handler)
 
-        if key is not None:
-            handler = OurLog(key)
+        if widget_or_key is not None:
+            handler = OurLog(widget_or_key)
             formatter = logging.Formatter(fmt='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                                           datefmt='%Y-%m-%d %H:%M:%S')
             handler.setFormatter(formatter)

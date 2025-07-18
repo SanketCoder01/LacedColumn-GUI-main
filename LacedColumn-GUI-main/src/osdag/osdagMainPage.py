@@ -562,7 +562,7 @@ class OsdagMainWindow(QMainWindow):
 
         # Launch the module's UI window using the corresponding design class.
         self.hide()
-        self.ui2 = Ui_ModuleWindow(module_class, ' ')
+        self.ui2 = Ui_ModuleWindow(module_class(), ' ')
         self.ui2.show()
         self.ui2.closed.connect(self.show)
         
@@ -594,43 +594,43 @@ class OsdagMainWindow(QMainWindow):
     def show_moment_connection(self):
         if self.findChild(QRadioButton,'B2B_Cover_Plate_Bolted').isChecked():
             self.hide()
-            self.ui2 = Ui_ModuleWindow(BeamCoverPlate, ' ')
+            self.ui2 = Ui_ModuleWindow(BeamCoverPlate(), ' ')
             self.ui2.show()
             self.ui2.closed.connect(self.show)
         elif self.findChild(QRadioButton,'B2B_Cover_Plate_Welded').isChecked():
             self.hide()
-            self.ui2 = Ui_ModuleWindow(BeamCoverPlateWeld, ' ')
+            self.ui2 = Ui_ModuleWindow(BeamCoverPlateWeld(), ' ')
             self.ui2.show()
             self.ui2.closed.connect(self.show)
         # elif self.findChild(QRadioButton,'B2B_End_Plate_Connection').isChecked():
         #     self.hide()
-        #     self.ui2 = Ui_ModuleWindow(BeamBeamEndPlateSplice,' ')
+        #     self.ui2 = Ui_ModuleWindow(BeamBeamEndPlateSplice(),' ')
         #     self.ui2.show()
         #     self.ui2.closed.connect(self.show)
         elif self.findChild(QRadioButton, 'B2B_End_Plate_Splice').isChecked():
             self.hide()
-            self.ui2 = Ui_ModuleWindow(BeamBeamEndPlateSplice, ' ')
+            self.ui2 = Ui_ModuleWindow(BeamBeamEndPlateSplice(), ' ')
             self.ui2.show()
             self.ui2.closed.connect(self.show)
 
     def show_moment_connection_bc(self):
         if self.findChild(QRadioButton,'BC_End_Plate').isChecked():
             self.hide()
-            self.ui2 = Ui_ModuleWindow(BeamColumnEndPlate, ' ')
+            self.ui2 = Ui_ModuleWindow(BeamColumnEndPlate(), ' ')
             self.ui2.show()
             self.ui2.closed.connect(self.show)
 
     def show_base_plate(self):
         if self.findChild(QRadioButton, 'Base_Plate').isChecked():
             self.hide()
-            self.ui2 = Ui_ModuleWindow(BasePlateConnection, ' ')
+            self.ui2 = Ui_ModuleWindow(BasePlateConnection(), ' ')
             self.ui2.show()
             self.ui2.closed.connect(self.show)
 
     def show_truss_bolted(self):
         if self.findChild(QRadioButton, 'Truss_Bolted').isChecked():
             self.hide()
-            self.ui2 = Ui_ModuleWindow(TrussConnectionBolted, ' ')
+            self.ui2 = Ui_ModuleWindow(TrussConnectionBolted(), ' ')
             self.ui2.show()
             self.ui2.closed.connect(self.show)
         #elif self.findChild(QRadioButton,'Truss_Welded').isChecked():
@@ -644,18 +644,18 @@ class OsdagMainWindow(QMainWindow):
     def show_moment_connection_cc(self):
         if self.findChild(QRadioButton,'C2C_Cover_Plate_Bolted').isChecked() :
             self.hide()
-            self.ui2 = Ui_ModuleWindow(ColumnCoverPlate, ' ')
+            self.ui2 = Ui_ModuleWindow(ColumnCoverPlate(), ' ')
             self.ui2.show()
             self.ui2.closed.connect(self.show)
         elif self.findChild(QRadioButton,'C2C_Cover_Plate_Welded').isChecked():
             self.hide()
-            self.ui2 = Ui_ModuleWindow(ColumnCoverPlateWeld, ' ')
+            self.ui2 = Ui_ModuleWindow(ColumnCoverPlateWeld(), ' ')
             self.ui2.show()
             self.ui2.closed.connect(self.show)
 
         elif self.findChild(QRadioButton,'C2C_End_Plate_Connection').isChecked():
             self.hide()
-            self.ui2 = Ui_ModuleWindow(ColumnEndPlate, ' ')
+            self.ui2 = Ui_ModuleWindow(ColumnEndPlate(), ' ')
             self.ui2.show()
             self.ui2.closed.connect(self.show)
 
@@ -663,7 +663,7 @@ class OsdagMainWindow(QMainWindow):
         """ Create radio buttons for the sub-modules under the compression module"""
         if self.findChild(QRadioButton, 'Strut_Design').isChecked():
             self.hide()
-            self.ui2 = Ui_ModuleWindow(Compression, ' ')
+            self.ui2 = Ui_ModuleWindow(Compression(), ' ')
             self.ui2.show()
             self.ui2.closed.connect(self.show)
 
@@ -674,6 +674,7 @@ class OsdagMainWindow(QMainWindow):
             
             # Create the module window with proper parent relationship
             self.ui2 = Ui_ModuleWindow(LacedColumn(), ' ', parent=self)
+            self.ui2.skip_quit_confirmation = True
             
             # Set window flags to ensure it's the only visible window
             self.ui2.setWindowFlags(Qt.Window)
@@ -719,13 +720,13 @@ class OsdagMainWindow(QMainWindow):
 
         if self.findChild(QRadioButton,'Tension_Bolted').isChecked():
             self.hide()
-            self.ui2 = Ui_ModuleWindow(Tension_bolted, ' ')
+            self.ui2 = Ui_ModuleWindow(Tension_bolted(), ' ')
             self.ui2.show()
             self.ui2.closed.connect(self.show)
 
         elif self.findChild(QRadioButton,'Tension_Welded').isChecked():
             self.hide()
-            self.ui2 = Ui_ModuleWindow(Tension_welded, ' ')
+            self.ui2 = Ui_ModuleWindow(Tension_welded(), ' ')
             self.ui2.show()
             self.ui2.closed.connect(self.show)
 
@@ -735,21 +736,21 @@ class OsdagMainWindow(QMainWindow):
         if self.findChild(QRadioButton, 'Beam_flexure').isChecked():
             # print(f"Here9")
             self.hide()
-            self.ui2 = Ui_ModuleWindow(Flexure, ' ')
+            self.ui2 = Ui_ModuleWindow(Flexure(), ' ')
             # print(f"Here11")
             self.ui2.show()
             self.ui2.closed.connect(self.show)
         elif self.findChild(QRadioButton, 'Beam_flexure2').isChecked():
             # print(f"Here9")
             self.hide()
-            self.ui2 = Ui_ModuleWindow(Flexure_Cantilever, ' ')
+            self.ui2 = Ui_ModuleWindow(Flexure_Cantilever(), ' ')
             # print(f"Here11")
             self.ui2.show()
             self.ui2.closed.connect(self.show)
         elif self.findChild(QRadioButton, 'Beam_flexure3').isChecked():
             # print(f"Here9")
             self.hide()
-            self.ui2 = Ui_ModuleWindow(Flexure_Misc, ' ')
+            self.ui2 = Ui_ModuleWindow(Flexure_Misc(), ' ')
             # print(f"Here11")
             self.ui2.show()
             self.ui2.closed.connect(self.show)
@@ -757,7 +758,7 @@ class OsdagMainWindow(QMainWindow):
         if self.findChild(QRadioButton, 'Beam_flexure').isChecked():
             # print(f"Here9")
             self.hide()
-            self.ui2 = Ui_ModuleWindow(Flexure, ' ')
+            self.ui2 = Ui_ModuleWindow(Flexure(), ' ')
             # print(f"Here11")
             self.ui2.show()
             self.ui2.closed.connect(self.show)
@@ -766,7 +767,7 @@ class OsdagMainWindow(QMainWindow):
         # btn = self.findChild(QRadioButton, "Welded_Girder_Design")
         # if btn is not None and btn.isChecked():
             self.hide()
-            self.ui2 = Ui_ModuleWindow(PlateGirderWelded, ' ')
+            self.ui2 = Ui_ModuleWindow(PlateGirderWelded(), ' ')
             self.ui2.show()
             self.ui2.closed.connect(self.show)
             return

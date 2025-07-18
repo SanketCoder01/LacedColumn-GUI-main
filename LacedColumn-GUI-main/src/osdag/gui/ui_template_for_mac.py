@@ -428,7 +428,7 @@ class Window(QMainWindow):
             To get 3d component checkbox details from modules
         """
         i = 0
-        for component in main.get_3d_components(main):
+        for component in main.get_3d_components():
             checkBox = QtWidgets.QCheckBox(self.frame)
             checkBox.setGeometry(QtCore.QRect(230 + i, 0, 110, 29))
             font = QtGui.QFont()
@@ -1242,7 +1242,7 @@ class Window(QMainWindow):
         This routine take the list of separate 3D components checkboxes to be displayed in the ribbon from
         the corresponding module file
         """
-        for component in main.get_3d_components(main):
+        for component in main.get_3d_components():
             actionShow_component = QtWidgets.QAction(MainWindow)
             font = QtGui.QFont()
             font.setFamily("DejaVu Sans")
@@ -2042,7 +2042,7 @@ class Window(QMainWindow):
                 self.commLogicObj.call_3DModel(status, module_class)
                 self.display_x = 90
                 self.display_y = 90
-                for chkbox in main.get_3d_components(main):
+                for chkbox in main.get_3d_components():
                     self.frame.findChild(QtWidgets.QCheckBox, chkbox[0]).setEnabled(True)
                 for action in self.menugraphics_component_list:
                     action.setEnabled(True)
@@ -2067,7 +2067,7 @@ class Window(QMainWindow):
                     with open("./ResourceFiles/images/"+fName, 'w'):
                         pass
                 self.display.EraseAll()
-                for chkbox in main.get_3d_components(main):
+                for chkbox in main.get_3d_components():
                     self.frame.findChild(QtWidgets.QCheckBox, chkbox[0]).setEnabled(False)
                 for action in self.menugraphics_component_list:
                     action.setEnabled(False)

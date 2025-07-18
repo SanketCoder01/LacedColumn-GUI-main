@@ -53,20 +53,7 @@ class LacedColumn(Member):
                  ('Hinged', 'Hinged'): 1.0, ('Fixed', 'Free'): 2.0, ('Free', 'Fixed'): 2.0}
         k = conds.get((end_condition_1, end_condition_2), 1.0)
         return k * unsupported_length_yy
-
-    def print_all_section_results(self):
-        """
-        Print all calculated section results to the terminal for debugging and verification.
-        """
-        if hasattr(self, 'optimum_section_ur_results') and self.optimum_section_ur_results:
-            print("\n[DEBUG] All calculated section results:")
-            for ur, result in sorted(self.optimum_section_ur_results.items()):
-                print(f"\nSection UR: {ur}")
-                for k, v in result.items():
-                    print(f"  {k}: {v}")
-        else:
-            print("[DEBUG] No section results available.")
-    # --- Patch: Prevent application from quitting on minimize ---
+    
     def event(self, event):
         # If the event is a window state change and the window is being minimized, ignore close/quit
         try:
@@ -83,6 +70,8 @@ class LacedColumn(Member):
             pass
         return super().event(event)
     def calculate(self, design_dictionary):
+        # Reset only calculation/output state for new design, not the whole module
+        self.reset_state_for_new_design()
         # --- PATCH: Ensure end condition values are always present and correct in design_dictionary ---
         # Try to extract from possible keys, fallback to UI attributes if missing, and update dictionary
         # This ensures end1/end2 are always correct for calculation and output
@@ -389,6 +378,8 @@ class LacedColumn(Member):
         self.web_class = None
         self.gamma_m0 = 1.1  # As per IS 800:2007, Table 5 for yield stress
         self.material_lookup_cache = {}  # Cache for (material, thickness) lookups
+        self.optimum_section_cost_results = {}  # Initialize to avoid AttributeError
+        self.optimum_section_cost = []  # For cost-based optimization, as in other modules
 
 ###############################################
 # Design Preference Functions Start
@@ -443,11 +434,6 @@ class LacedColumn(Member):
         t5 = (KEY_DISP_COLSEC, [KEY_SECSIZE], [KEY_SOURCE], TYPE_TEXTBOX, self.change_source)
         change_tab.append(t5)
         return change_tab
-
-    def edit_tabs(self):
-        """This function is required if the tab name changes based on connectivity or profile or any other key.
-        Not required for this module but empty list should be passed"""
-        return []
 
     def input_dictionary_design_pref(self):
         """
@@ -542,9 +528,6 @@ class LacedColumn(Member):
     ####################################
     # Design Preference Functions End
     ####################################
-
-    # Setting up logger and Input and Output Docks
-    ####################################
     def module_name(self):
         return KEY_DISP_COMPRESSION_COLUMN
 
@@ -559,20 +542,9 @@ class LacedColumn(Member):
         handler = logging.FileHandler('logging_text.log')
         handler.setFormatter(formatter)
         self.logger.addHandler(handler)
-        # Add QTextEdit logger if widget is provided
-        if widget_or_key is not None and hasattr(widget_or_key, 'append'):
-            class QTextEditLogger(logging.Handler):
-                def __init__(self, text_edit):
-                    super().__init__()
-                    self.text_edit = text_edit
-                def emit(self, record):
-                    msg = self.format(record)
-                    self.text_edit.append(msg)
-            qtext_handler = QTextEditLogger(widget_or_key)
-            qtext_handler.setFormatter(formatter)
-            self.logger.addHandler(qtext_handler)
-        elif widget_or_key is not None:
-            # If it's a key, use your existing OurLog logic
+        # Always use OurLog for colored log messages in the log window
+        if widget_or_key is not None:
+            from ...Common import OurLog
             handler = OurLog(widget_or_key)
             handler.setFormatter(formatter)
             self.logger.addHandler(handler)
@@ -1949,6 +1921,10 @@ class LacedColumn(Member):
                         self.optimum_section_ur_results[ur]['channel_spacing'] = spacing_between_channels
                         self.optimum_section_ur_results[ur]['lacing_spacing'] = lacing_angle
 
+                    # Calculate and store cost for this section (needed for cost-based optimization)
+                    self.cost = (self.section_property.unit_mass * self.section_property.area * 1e-4) * min(self.length_zz, self.length_yy) * self.steel_cost_per_kg
+                    self.optimum_section_cost.append(self.cost)
+
                     #tieplate
                     # 2.X - Tie Plate Dimensions
                     self.tie_plate_d = round(2 * self.section_property.depth / 3, 2)         # mm
@@ -2758,57 +2734,11 @@ class LacedColumn(Member):
              KEY_SEC_FY: fy}
         return d
 
-    def close_module(self, explicit_user_action=False):
-        """
-        Called when the LacedColumn module is closed. Resets all input and output state, and closes any background windows/tabs (like design preferences) that may be open.
-        Only show 'close module' message if explicit_user_action is True.
-        """
-        print("[DEBUG][close_module] Closing LacedColumn module: resetting state and closing background windows.")
-        # Close all dialogs/windows robustly
-        for dlg in getattr(self, 'dialogs', []):
-            try:
-                if dlg is not None and dlg.isVisible():
-                    dlg.close()
-            except Exception:
-                pass
-        self.dialogs = []
-        # Reset all output/calculated fields
-        self.reset_output_state()
-        # Reset all input fields (QLineEdit, QComboBox, etc.)
-        if hasattr(self, 'unsupported_length_yy_lineedit'):
-            self.unsupported_length_yy_lineedit.setText("")
-        if hasattr(self, 'unsupported_length_zz_lineedit'):
-            self.unsupported_length_zz_lineedit.setText("")
-        if hasattr(self, 'axial_load_lineedit'):
-            self.axial_load_lineedit.setText("")
-        if hasattr(self, 'material_combo'):
-            self.material_combo.setCurrentIndex(0)
-        if hasattr(self, 'connection_combo'):
-            self.connection_combo.setCurrentIndex(0)
-        if hasattr(self, 'lacing_pattern_combo'):
-            self.lacing_pattern_combo.setCurrentIndex(0)
-        if hasattr(self, 'section_profile_combo'):
-            self.section_profile_combo.setCurrentIndex(0)
-        if hasattr(self, 'section_designation_combo'):
-            self.section_designation_combo.setCurrentIndex(0)
-        if hasattr(self, 'design_pref_dialog') and self.design_pref_dialog is not None:
-            try:
-                if self.design_pref_dialog.isVisible():
-                    self.design_pref_dialog.close()
-            except Exception:
-                pass
-            self.design_pref_dialog = None
-        self.sec_list = []
-        self.material = ""
-        print("[DEBUG][close_module] State reset complete.")
-        if explicit_user_action:
-            # Only show message if user explicitly closed the module
-            QMessageBox.information(None, "Module Closed", "Laced Column module has been closed.")
-
     def open_module(self):
         """
         Called when the LacedColumn module is opened. Ensures all input/output state is reset (fresh start).
-        """ 
+        Only call this on explicit user action (not on value change or design).
+        """
         print("[DEBUG][open_module] Opening LacedColumn module: resetting state.")
         self.close_module(explicit_user_action=False)  # Always reset on open, no message
         print("[DEBUG][open_module] State reset complete.")
@@ -2829,44 +2759,28 @@ class LacedColumn(Member):
         if dialog in self.dialogs:
             self.dialogs.remove(dialog)
 
-class SectionDesignationDialog(QDialog):
-    def __init__(self, section_list, parent=None):
-        super().__init__(parent)
-        self.setWindowTitle("Select Section Designations")
-        self.setModal(True)
-        self.selected_sections = []
-        layout = QVBoxLayout(self)
-        self.list_widget = QListWidget()
-        self.list_widget.addItems(section_list)
-        self.list_widget.setSelectionMode(QListWidget.MultiSelection)
-        layout.addWidget(self.list_widget)
-        button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
-        button_box.accepted.connect(self.accept)
-        button_box.rejected.connect(self.reject)
-        layout.addWidget(button_box)
-
-    def get_selected(self):
-        return [item.text() for item in self.list_widget.selectedItems()]
-
-    def get_section_class(self, flange_class, web_class):
-        # Helper to determine section class from flange and web
-        if flange_class == 'Plastic' and web_class == 'Plastic':
-            return 'Plastic'
-        elif 'Plastic' in [flange_class, web_class] and 'Compact' in [flange_class, web_class]:
-            return 'Compact'
-        elif 'Plastic' in [flange_class, web_class] and 'Semi-Compact' in [flange_class, web_class]:
-            return 'Semi-Compact'
-        elif flange_class == 'Compact' and web_class == 'Compact':
-            return 'Compact'
-        elif 'Compact' in [flange_class, web_class] and 'Semi-Compact' in [flange_class, web_class]:
-            return 'Semi-Compact'
-        elif flange_class == 'Semi-Compact' and web_class == 'Semi-Compact':
-            return 'Semi-Compact'
-        else:
-            return 'Slender'
-
-def safe_float(val):
-    try:
-        return float(val)
-    except Exception:
-        return 0.0
+    def reset_state_for_new_design(self):
+        """
+        Reset only calculation/output state for a new design, without closing dialogs or clearing input widgets.
+        """
+        self.reset_output_state()
+        self.design_status = False
+        self.failed_reason = None
+        self.result = {}
+        self.utilization_ratio = 0
+        self.area = 0
+        self.epsilon = 1.0
+        self.fy = 0
+        self.section = None
+        self.weld_size = ''
+        self.weld_type = ''
+        self.weld_strength = 0
+        self.lacing_incl_angle = 0
+        self.lacing_section = ''
+        self.lacing_type = ''
+        self.allowed_utilization = ''
+        self.section_designation = None
+        self.output_title_fields = {}
+        self.material_lookup_cache = {}
+        self.optimum_section_cost_results = {}
+        self.optimum_section_cost = []

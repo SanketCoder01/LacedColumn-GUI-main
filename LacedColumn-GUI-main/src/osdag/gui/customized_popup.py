@@ -136,7 +136,7 @@ class Ui_Popup(object):
             self.error_message.setText('Please Select some values.')
             self.error_message.exec()
         else:
-            MainWindow.close()
+            self.close()  # Only close the popup, not the main window
 
 
     def update_buttons_status(self):
