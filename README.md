@@ -44,7 +44,6 @@ Do **not** go inside the `src` folder. Stay in the main folder just before it.
 
 In **PowerShell**, use the following command to set the Python path and run Osdag:
 
-powershell
 $env:PYTHONPATH = "src"
 python -m osdag.osdagMainPage
 
