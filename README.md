@@ -48,34 +48,32 @@ powershell
 $env:PYTHONPATH = "src"
 python -m osdag.osdagMainPage
 
-Final Result 
+✅ Final Result
 I followed the above steps, and I’m happy to share that:
 
 ✅ Everything is working properly
 
 ✅ The GUI for the Laced Column module runs smoothly
 
-✅ All design calculations and validations are accurate
+✅ All design calculations and validations are accurate as per IS 800:2007
 
-✅ The module is fully integrated into the Osdag framework
+✅ The module is now fully integrated into the Osdag framework
 
-Modified Files
-During development and integration, I made changes in the following files:
+📝 Modified Files
+During development and integration, I made changes to the following files:
 
-src/osdag/compression_member/laced_column/lacedcolumn.py ✅ (Main logic implementation)
+1. src/osdag/compression_member/laced_column/lacedcolumn.py – Main logic and design calculation implementation
 
-UI.template ✅ (GUI integration for input and output screens)
+2. UI.template – GUI integration for inputs, outputs, and module navigation
 
-design_preference.ui ✅ (Added design settings for laced columns)
+3. design_preference.ui – Added lacing-related design preference options
 
-osdagMainPage.py ✅ (Hooked up GUI navigation and module launching)
+4. osdagMainPage.py – Linked the new module to Osdag’s main UI
 
-common.py ✅ (Added shared utility functions and inputs)
+5. common.py – Utility functions and input parameter handling
 
-is800_2007exp.py ✅ (Used for IS:800:2007 clause-based calculations)
+6. is800_2007exp.py – Clause-based checks and calculations based on IS 800:2007
 
 References Used
-To maintain consistency with existing modules, I referred to:
+column.py
 
-column.py and related files
-(for structure, calculation flow, and UI linkage)
