@@ -332,6 +332,7 @@ class LacedColumn(Member):
         # Any other custom/calculated fields should be reset here as well
     def __init__(self):
         super().__init__()
+        self.material_property = None  # Defensive: always initialize
         self.design_status = False
         self.failed_reason = None  # Track why design failed
         self.result = {}
@@ -1472,6 +1473,19 @@ class LacedColumn(Member):
 
     # Simulation starts here
     def section_classification(self):
+        # Defensive: ensure material_property is set
+        if not hasattr(self, 'material_property') or self.material_property is None:
+            if hasattr(self, 'material') and self.material:
+                try:
+                    self.material_property = Material(material_grade=self.material, thickness=0)
+                except Exception as e:
+                    self.logger.error(f"Failed to initialize material_property: {e}")
+                    self.design_status = False
+                    return False
+            else:
+                self.logger.error("Material property not initialized and material is missing.")
+                self.design_status = False
+                return False
         # Deduplicate section list to avoid repeated processing
         self.sec_list = list(dict.fromkeys(self.sec_list))
         local_flag = True
