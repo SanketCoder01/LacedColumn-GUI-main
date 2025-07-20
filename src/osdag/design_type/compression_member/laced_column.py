@@ -42,6 +42,7 @@ from ...Common import KEY_LACING_SECTION_DIM
 from .Column import ColumnDesign
 
 class LacedColumn(ColumnDesign):
+    '''
     def calculate_effective_length_yy(self, end_condition_1, end_condition_2, unsupported_length_yy):
         """
         Calculate the effective length (YY) using IS 800:2007 Table 11 logic.
@@ -56,6 +57,7 @@ class LacedColumn(ColumnDesign):
                  ('Hinged', 'Hinged'): 1.0, ('Fixed', 'Free'): 2.0, ('Free', 'Fixed'): 2.0}
         k = conds.get((end_condition_1, end_condition_2), 1.0)
         return k * unsupported_length_yy
+    '''
 
     def print_all_section_results(self):
         """
@@ -1070,7 +1072,7 @@ class LacedColumn(ColumnDesign):
         out_list.append(("lacing_spacing", "Lacing Spacing (L0) (mm)", TYPE_TEXTBOX, lacing_spacing, True))
 
         return out_list
-
+    '''
     def func_for_validation(self, design_dictionary):
 
         all_errors = []
@@ -1134,7 +1136,7 @@ class LacedColumn(ColumnDesign):
                 pass
         else:
             return all_errors
-
+    '''
     def get_3d_components(self, *args, **kwargs):
         components = []
         t1 = ('Model', self.call_3DModel)
@@ -1806,7 +1808,8 @@ class LacedColumn(ColumnDesign):
             fname_no_ext = popup_summary['filename']
             CreateLatex.save_latex(CreateLatex(), self.report_input, self.report_check, popup_summary, fname_no_ext,
                                   rel_path, Disp_2d_image, Disp_3D_image, module=self.module) 
-        
+    
+    '''   
     def get_end_conditions(self, *args):
         """
         Returns the list of standard end conditions for both y-y and z-z axes.
@@ -1850,7 +1853,7 @@ class LacedColumn(ColumnDesign):
         except Exception as e:
             # Return empty values if there's an error
             return ['', '', '', '', '', '', '', '', '', '', '', '', '']
-
+    '''
     def change_source(self, *args):
         """
         Change source information for the selected section.
@@ -1870,7 +1873,7 @@ class LacedColumn(ColumnDesign):
             return section_property.source if hasattr(section_property, 'source') else 'IS 808'
         except Exception as e:
             return 'IS 808'  # Default source
-
+    '''
     def get_SHS_RHS_properties(self, *args):
         """
         Get SHS/RHS section properties for display in design preferences.
@@ -1940,7 +1943,7 @@ class LacedColumn(ColumnDesign):
         except Exception as e:
             # Return empty values if there's an error
             return ['', '', '', '', '', '', '', '', '', '']
-
+    
     def get_fu_fy_I_section(self, *args):
         """
         Override to accept arguments as passed from tab_change (material, designation_dict).
@@ -1978,7 +1981,7 @@ class LacedColumn(ColumnDesign):
              KEY_SEC_FU: fu,
              KEY_SEC_FY: fy}
         return d
-
+    '''
     def close_module(self):
         """
         Called when the LacedColumn module is closed. Resets all input and output state, and closes any background windows/tabs (like design preferences) that may be open.
@@ -2047,7 +2050,8 @@ class SectionDesignationDialog(QDialog):
 
     def get_selected(self):
         return [item.text() for item in self.list_widget.selectedItems()]
-
+    
+    '''
     def get_section_class(self, flange_class, web_class):
         # Helper to determine section class from flange and web
         if flange_class == 'Plastic' and web_class == 'Plastic':
@@ -2064,6 +2068,7 @@ class SectionDesignationDialog(QDialog):
             return 'Semi-Compact'
         else:
             return 'Slender'
+    '''
 
 def safe_float(val):
     try:
