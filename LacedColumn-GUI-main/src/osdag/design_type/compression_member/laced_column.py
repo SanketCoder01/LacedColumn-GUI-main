@@ -1685,9 +1685,18 @@ class LacedColumn(Member):
             best_ur = None
             best_section_results = None
             if self.optimum_section_ur:
-                best_ur = min(self.optimum_section_ur, key=lambda x: abs(x-1.0))  # closest to 1.0
+                best_ur = round(min(self.optimum_section_ur, key=lambda x: abs(x-1.0)), 3)
+                best_section_results = self.optimum_section_ur_results.get(best_ur)
+                if best_section_results is None:
+                    # fallback: find the closest key within a small tolerance
+                    if self.optimum_section_ur_results:
+                        closest_key = min(self.optimum_section_ur_results.keys(), key=lambda k: abs(k - best_ur))
+                        if abs(closest_key - best_ur) < 1e-3:
+                            best_section_results = self.optimum_section_ur_results[closest_key]
+                    if best_section_results is None:
+                        self.logger.error(f"Result UR {best_ur} not found in optimum_section_ur_results. No valid design result to display.")
+                        return
                 summary_lines.append(f"Best UR: {best_ur}")
-                best_section_results = self.optimum_section_ur_results[best_ur]
                 summary_lines.append(f"Best Section Results: {best_section_results}")
 
             summary_lines.append("======================")
