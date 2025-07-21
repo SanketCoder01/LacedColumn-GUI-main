@@ -240,8 +240,8 @@ class Ui_SectionParameters(QtWidgets.QDialog):
         if(error==True):
             QtWidgets.QMessageBox.critical(self, "Error", f"Following condition(s) is/are not satisfied:\n\n{string}") 
             self.textBoxVisible={}     
-            return  
-
+            return 
+         
         self.close()
     
     def func_for_numerical_validations(self,index_type,index_template):

@@ -686,7 +686,7 @@ class OsdagMainWindow(QMainWindow):
             # Show the module window and ensure it's active
             self.ui2.show()
             self.ui2.raise_()
-            self.ui2.activateWindow()
+            self.ui2.activateWindow()   
 
         elif self.findChild(QRadioButton, 'Battened_Column_Design').isChecked():
             self.hide()

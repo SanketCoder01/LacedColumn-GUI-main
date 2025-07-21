@@ -167,6 +167,10 @@ class Ui_ModuleWindow(QtWidgets.QMainWindow):
 
     def closeEvent(self, event):
         # Only show confirmation if this is a user-initiated close (not programmatic)
+        if hasattr(self, '_programmatic_close') and self._programmatic_close:
+            event.accept()
+            self._programmatic_close = False
+            return
         if event.spontaneous():
             reply = QMessageBox.question(self, 'Message',
                                          "Are you sure you want to quit?", QMessageBox.Yes, QMessageBox.No)
@@ -179,8 +183,8 @@ class Ui_ModuleWindow(QtWidgets.QMainWindow):
             else:
                 event.ignore()
         else:
-            # If the close event is not user-initiated, always accept it (never show dialog)
             event.accept()
+
 
 class Window(QMainWindow):
     closed = QtCore.pyqtSignal()
@@ -342,6 +346,8 @@ class Window(QMainWindow):
 
     def start_loadingWindow(self, main, data):
         # Directly call the design logic without modal dialogs or threads
+        self.common_function_for_save_and_design(main, data, "Design")
+        self._programmatic_close = True
         self.common_function_for_save_and_design(main, data, "Design")
         self.progress_bar = QProgressBar(self)
         self.progress_bar.setMaximum(100)
@@ -2152,6 +2158,12 @@ class Window(QMainWindow):
                 ui = None
             self.designPrefDialog = DummyDialog()
         self.design_fn(option_list, data, main)
+        # Check for missing/invalid fields before calculation
+        missing_fields = [k for k, v in self.design_inputs.items() if v in [None, '', 'Select Section', 'Select Material', '0', 0]]
+        if missing_fields:
+            QMessageBox.warning(self, 'Missing Fields', 'Please fill all required fields.')
+            # self._programmatic_close = True  # Remove this line to prevent window from closing
+            return
         # Always run calculation after collecting inputs
         if hasattr(main, "calculate") and callable(getattr(main, "calculate")):
             print("[DEBUG] Calling main.calculate with design_inputs:", self.design_inputs)
@@ -2231,6 +2243,10 @@ class Window(QMainWindow):
             output_field.setEnabled(False)
     def closeEvent(self, event):
         # Only show confirmation if this is a user-initiated close (not programmatic)
+        if hasattr(self, '_programmatic_close') and self._programmatic_close:
+            event.accept()
+            self._programmatic_close = False
+            return
         if event.spontaneous():
             reply = QMessageBox.question(self, 'Message',
                                          "Are you sure you want to quit?", QMessageBox.Yes, QMessageBox.No)
@@ -2243,7 +2259,6 @@ class Window(QMainWindow):
             else:
                 event.ignore()
         else:
-            # If the close event is not user-initiated, always accept it (never show dialog)
             event.accept()
 
     def osdag_header(self):
