@@ -1452,6 +1452,10 @@ class Window(QMainWindow):
                 for k, v in best_section.items():
                     print(f"  {k}: {v}")
 
+        # ... after self.inputDock is created in setupUi ...
+        self.inputDock.setMinimumWidth(400)
+        self.in_widget.setMinimumWidth(400)
+
     def notification(self):
         update_class = Update()
         msg = update_class.notifi()

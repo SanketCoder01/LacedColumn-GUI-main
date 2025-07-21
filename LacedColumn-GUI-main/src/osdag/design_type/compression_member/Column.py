@@ -861,7 +861,7 @@ class ColumnDesign(Member):
         # 2 - Based on optimum cost
         self.optimum_section_cost_results = {}
         self.optimum_section_cost = []
-        self.flag = self.section_classification(self)
+        self.flag = self.section_classification()
 
         print('self.flag:',self.flag)
 

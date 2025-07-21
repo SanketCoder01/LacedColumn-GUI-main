@@ -393,9 +393,9 @@ KEY_DISP_ACTUAL_LEN_ZZ = 'Actual Length (z-z), mm'
 KEY_ACTUAL_LEN_YY = 'Actual.Length_yy'
 KEY_DISP_ACTUAL_LEN_YY = 'Actual Length (y-y), mm'
 KEY_UNSUPPORTED_LEN_ZZ = 'Unsupported.Length_zz'
-KEY_DISP_UNSUPPORTED_LEN_ZZ = 'Unsupported Length (z-z), mm *'
+KEY_DISP_UNSUPPORTED_LEN_ZZ = 'Unsupported Length (z-z)'
 KEY_UNSUPPORTED_LEN_YY = 'Unsupported.Length_yy'
-KEY_DISP_UNSUPPORTED_LEN_YY = 'Unsupported Length (y-y), mm *'
+KEY_DISP_UNSUPPORTED_LEN_YY = 'Unsupported Length (y-y)'
 KEY_DESIGN_COMPRESSION = 'Design Results'
 KEY_DESIGN_STRENGTH_COMPRESSION = 'Design.Strength'
 KEY_MIN_DESIGN_COMP_STRESS = 'MinCompStress'
@@ -3439,6 +3439,3 @@ PLATE_GIRDER_DEFLECTION_TABLE = str("""
 
 
 """)
-
-
-
