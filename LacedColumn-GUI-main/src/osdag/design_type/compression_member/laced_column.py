@@ -1334,6 +1334,7 @@ class LacedColumn(Member):
 
     def design_column(self):
         try:
+            summary_lines = []
             # checking DP inputs
             if (self.allowable_utilization_ratio <= 0.10) or (self.allowable_utilization_ratio > 1.0):
                 logger.warning("The defined value of Utilization Ratio in the design preferences tab is out of the suggested range.")
