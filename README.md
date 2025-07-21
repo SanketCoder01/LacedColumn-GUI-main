@@ -24,7 +24,6 @@ The Laced Column module supports:
 
 In **PowerShell**, execute:
 
-`powershell
 $env:PYTHONPATH = "src"
 python -m osdag.osdagMainPage
 
@@ -39,6 +38,14 @@ python -m osdag.osdagMainPage
 | `osdagMainPage.py`                                         | Registered module into the Osdag main interface            |
 | `common.py`                                                | Parameter handling and input utilities                     |
 | `is800_2007exp.py`                                         | Clause-based methods from IS 800:2007                      |
+
+
+| Issue            | Clicking the **Design** button sometimes triggers the **"Are you sure you want to quit?"** confirmation dialog                          |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Cause            | The `closeEvent()` in `ui_template.py` triggers the dialog when `.close()` is called, even after design                                 |
+| Tried Fix        | Setting `self._programmatic_close = True` before `.close()` inside design functions (e.g. `save_parameters()`, `start_loadingWindow()`) |
+| ❌ Current Status | **Partially fixed**, but issue **still appears intermittently**, especially in preference or input dialogs                              |
+| 🚧 Next Steps    | Continue tracing all `.close()` calls and window instances; ensure all dialogs set `_programmatic_close` before calling `.close()`      |
 
 
 References Used
